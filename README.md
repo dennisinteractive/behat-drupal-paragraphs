@@ -10,8 +10,8 @@ Add the context under contexts: `DennisDigital\Behat\Drupal\Paragraphs\Context\P
 ### Step definitions
 
 ```gherkin
-Given I add the following paragraph to field "fieldname"
-Given I add the following paragraph to field "fieldname" on paragraph "name"
-Given I add the following paragraphs to field "fieldname"
-Given I add the following paragraphs to field "fieldname" on paragraph "name"
+Given I add the following paragraph to field "fieldname":
+Given I add the following paragraph to field "fieldname" on paragraph "name":
+Given I add the following paragraphs to field "fieldname":
+Given I add the following paragraphs to field "fieldname" on paragraph "name":
 ```

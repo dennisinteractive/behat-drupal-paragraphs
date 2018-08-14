@@ -4,6 +4,7 @@ namespace DennisDigital\Behat\Drupal\Paragraphs\Context;
 use Drupal\DrupalExtension\Context\RawDrupalContext;
 use DennisDigital\Behat\Drupal\Paragraphs\Driver\ParagraphsDriverManager;
 use Drupal\paragraphs\Entity\Paragraph;
+use Behat\Gherkin\Node\TableNode;
 
 /**
  * ParagraphsContext
