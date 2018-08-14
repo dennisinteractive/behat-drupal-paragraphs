@@ -15,3 +15,5 @@ Given I add the following paragraph to field "fieldname" on paragraph "name":
 Given I add the following paragraphs to field "fieldname":
 Given I add the following paragraphs to field "fieldname" on paragraph "name":
 ```
+
+See examples on features folder.

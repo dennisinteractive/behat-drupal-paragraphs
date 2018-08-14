@@ -5,6 +5,9 @@ use Drupal\DrupalExtension\Context\RawDrupalContext;
 use DennisDigital\Behat\Drupal\Paragraphs\Driver\ParagraphsDriverManager;
 use Drupal\paragraphs\Entity\Paragraph;
 use Behat\Gherkin\Node\TableNode;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\DrupalExtension\Hook\Scope\EntityScope;
+use Exception;
 
 /**
  * ParagraphsContext
@@ -18,7 +21,19 @@ class ParagraphsContext extends RawDrupalContext {
   /**
    * @var
    */
-  Protected $paragraphs;
+  protected $paragraphs;
+
+  /**
+   * @var
+   */
+  protected $node;
+
+  /**
+   * @afterNodeCreate
+   */
+  public function storeNode(EntityScope $scope) {
+    $this->node = $scope->getEntity();
+  }
 
   /**
    * @return \DennisDigital\Behat\Drupal\Paragraphs\Driver\ParagraphsDriverInterface
@@ -218,7 +233,7 @@ class ParagraphsContext extends RawDrupalContext {
   public function addParagraphToField($field_name, Paragraph $paragraph)
   {
 
-    if (empty($this->nodes)) {
+    if (empty($this->node)) {
       throw new Exception("There are no nodes to add paragraphs to.");
     }
 
@@ -226,10 +241,7 @@ class ParagraphsContext extends RawDrupalContext {
       throw new Exception("Unable to create Paragraph.");
     }
 
-    foreach ($this->nodes as $node) {
-      $this->appendParagraphToEntityField('node', $node->nid, $field_name, $paragraph);
-    }
-
+    $this->appendParagraphToEntityField('node', $this->node->nid, $field_name, $paragraph);
   }
 
   /**
@@ -258,10 +270,9 @@ class ParagraphsContext extends RawDrupalContext {
   /**
    * @Given /^I add the following paragraphs to field "([^"]*)":/
    */
-  public function addTheFollowingParagraphs($field_name, TableNode $table)
-  {
+  public function addTheFollowingParagraphs($field_name, TableNode $table) {
 
-    if (empty($this->nodes)) {
+    if (empty($this->node)) {
       throw new Exception("There are no nodes to add paragraphs to.");
     }
 
@@ -270,30 +281,27 @@ class ParagraphsContext extends RawDrupalContext {
       throw new Exception("Unable to create Paragraphs.");
     }
 
-    foreach ($this->nodes as $node) {
+    // Load up the node for this paragraph
+    $entity = \Drupal::entityTypeManager()
+      ->getStorage('node')
+      ->load($this->node->nid);
 
-      // Load up the node for this paragraph
-      $entity = \Drupal::entityTypeManager()->getStorage('node')->load($node->nid);
-
-      if (empty($entity)) {
-        throw new Exception(printf("Entity not found: node/%s", $node->nid));
-      }
-
-      // Check if it has the required field
-      if (!$entity->hasField($field_name)) {
-        throw new Exception(printf("Field not found on entity node/%s : %s", $node->nid, $field_name));
-      }
-
-      // Add all the paragraphs
-      foreach ($paragraphs as $paragraph) {
-        $entity->{$field_name}->appendItem($paragraph);
-      }
-
-      // Save the node
-      $entity->save();
-
-      break;
+    if (empty($entity)) {
+      throw new Exception(printf("Entity not found: node/%s", $this->node->nid));
     }
+
+    // Check if it has the required field
+    if (!$entity->hasField($field_name)) {
+      throw new Exception(printf("Field not found on entity node/%s : %s", $this->node->nid, $field_name));
+    }
+
+    // Add all the paragraphs
+    foreach ($paragraphs as $paragraph) {
+      $entity->{$field_name}->appendItem($paragraph);
+    }
+
+    // Save the node
+    $entity->save();
   }
 
   /**
