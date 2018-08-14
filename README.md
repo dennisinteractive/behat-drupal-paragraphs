@@ -2,6 +2,9 @@
 
 Provides Behat steps for Drupal Paragraphs module
 
+## Installation
+1. `composer require dennisdigital/behat-drupal-paragraphs:~1.0.0`
+
 ## Usage
 
 ### Add context to behat.yml:
