@@ -344,4 +344,38 @@ class ParagraphsContext extends RawDrupalContext {
       }
     }
   }
+
+  /**
+   * Load/Create taxonomy term from string (vocabulary:term_name)
+   * @param $value
+   * @return bool|int|mixed
+   * @throws Exception
+   */
+  public function assertTerm($value) {
+    $term = FALSE;
+    if (strpos($value, ':') === FALSE) {
+      throw new Exception(printf('Unknown vocabulary in value: %s', $value));
+    }
+
+    $values = explode(':', $value);
+    $name = trim($values[1]);
+    $vocab = trim($values[0]);
+    if ($terms = taxonomy_term_load_multiple_by_name($name, $vocab)) {
+      $term = reset($terms);
+    }
+
+    // Create term if not found
+    if (empty($term)) {
+      // Sadly DrupalContext->createTerm doesn't return the newly created term, so do it ourselves
+      $term = (object) array(
+        'name' => $name,
+        'vocabulary_machine_name' => $vocab,
+        'description' => ''
+      );
+      $term_object = $this->termCreate($term);
+      return $term_object->tid;
+    }
+
+    return $term->id();
+  }
 }
