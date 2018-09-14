@@ -26,13 +26,39 @@ class ParagraphsContext extends RawDrupalContext {
   /**
    * @var
    */
-  protected $node;
+  protected $nodes;
 
   /**
    * @afterNodeCreate
    */
   public function storeNode(EntityScope $scope) {
-    $this->node = $scope->getEntity();
+    $this->nodes[] = $scope->getEntity();
+  }
+
+  /**
+   * Returns the last created node.
+   *
+   * @return \stdClass
+   */
+  protected function getCurrentNode() {
+    if ($node = end($this->nodes)) {
+      return $node;
+    }
+    throw new Exception('Node has not been created.');
+  }
+
+  /**
+   * Returns node with provided title.
+   *
+   * @return \stdClass
+   */
+  protected function getNodeByTitle($title) {
+    foreach ($this->nodes as $node) {
+      if ($node->title == $title) {
+        return $node;
+      }
+    }
+    throw new Exception('Could not find node with title: ' . $title);
   }
 
   /**
@@ -182,6 +208,9 @@ class ParagraphsContext extends RawDrupalContext {
         }
         $field_data[$field_name]['target_id'] = $term;
       }
+      if ($field_key === 'node') {
+        $field_data[$field_name]['target_id'] = $this->getNodeByTitle($field_value)->nid;
+      }
       else if ($field_key === 'link') {
         // If this is a link field, then split out the uri and title values and add both
         if (strpos($field_value, ',') !== FALSE) {
@@ -233,7 +262,7 @@ class ParagraphsContext extends RawDrupalContext {
   public function addParagraphToField($field_name, Paragraph $paragraph)
   {
 
-    if (empty($this->node)) {
+    if (empty($this->getCurrentNode())) {
       throw new Exception("There are no nodes to add paragraphs to.");
     }
 
@@ -241,7 +270,7 @@ class ParagraphsContext extends RawDrupalContext {
       throw new Exception("Unable to create Paragraph.");
     }
 
-    $this->appendParagraphToEntityField('node', $this->node->nid, $field_name, $paragraph);
+    $this->appendParagraphToEntityField('node', $this->getCurrentNode()->nid, $field_name, $paragraph);
   }
 
   /**
@@ -272,7 +301,7 @@ class ParagraphsContext extends RawDrupalContext {
    */
   public function addTheFollowingParagraphs($field_name, TableNode $table) {
 
-    if (empty($this->node)) {
+    if (empty($this->getCurrentNode())) {
       throw new Exception("There are no nodes to add paragraphs to.");
     }
 
@@ -284,15 +313,15 @@ class ParagraphsContext extends RawDrupalContext {
     // Load up the node for this paragraph
     $entity = \Drupal::entityTypeManager()
       ->getStorage('node')
-      ->load($this->node->nid);
+      ->load($this->getCurrentNode()->nid);
 
     if (empty($entity)) {
-      throw new Exception(printf("Entity not found: node/%s", $this->node->nid));
+      throw new Exception(printf("Entity not found: node/%s", $this->getCurrentNode()->nid));
     }
 
     // Check if it has the required field
     if (!$entity->hasField($field_name)) {
-      throw new Exception(printf("Field not found on entity node/%s : %s", $this->node->nid, $field_name));
+      throw new Exception(printf("Field not found on entity node/%s : %s", $this->getCurrentNode()->nid, $field_name));
     }
 
     // Add all the paragraphs
