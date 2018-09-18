@@ -24,18 +24,6 @@ class ParagraphsContext extends RawDrupalContext {
   protected $paragraphs;
 
   /**
-   * @var
-   */
-  protected $nodes;
-
-  /**
-   * @afterNodeCreate
-   */
-  public function storeNode(EntityScope $scope) {
-    $this->nodes[] = $scope->getEntity();
-  }
-
-  /**
    * Returns the last created node.
    *
    * @return \stdClass
