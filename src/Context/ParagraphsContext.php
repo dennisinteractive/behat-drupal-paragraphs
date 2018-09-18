@@ -19,9 +19,21 @@ class ParagraphsContext extends RawDrupalContext {
   protected $paragraphsDriver;
 
   /**
-   * @var
+   * @var array of created paragraphs.
    */
   protected $paragraphs;
+
+  /**
+   * @var array of created nodes.
+   */
+  protected $created_nodes = [];
+
+  /**
+   * @afterNodeCreate
+   */
+  public function storeNode(EntityScope $scope) {
+    $this->created_nodes[] = $scope->getEntity();
+  }
 
   /**
    * Returns the last created node.
@@ -29,7 +41,7 @@ class ParagraphsContext extends RawDrupalContext {
    * @return \stdClass
    */
   protected function getCurrentNode() {
-    if ($node = end($this->nodes)) {
+    if ($node = end($this->created_nodes)) {
       return $node;
     }
     throw new Exception('Node has not been created.');
@@ -41,7 +53,7 @@ class ParagraphsContext extends RawDrupalContext {
    * @return \stdClass
    */
   protected function getNodeByTitle($title) {
-    foreach ($this->nodes as $node) {
+    foreach ($this->created_nodes as $node) {
       if ($node->title == $title) {
         return $node;
       }
