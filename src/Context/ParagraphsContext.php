@@ -102,6 +102,9 @@ class ParagraphsContext extends RawDrupalContext {
 
     $entity->{$field_name}->appendItem($paragraph);
     $entity->save();
+
+    // Clear static cache / cache tags after re-saving the entity.
+    $this->clearStaticCaches();
   }
 
   /**
