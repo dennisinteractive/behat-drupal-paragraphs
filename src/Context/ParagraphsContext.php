@@ -29,10 +29,22 @@ class ParagraphsContext extends RawDrupalContext {
   protected $created_nodes = [];
 
   /**
+   * @var array of created terms.
+   */
+  protected $created_terms = [];
+
+  /**
    * @afterNodeCreate
    */
   public function storeNode(EntityScope $scope) {
     $this->created_nodes[] = $scope->getEntity();
+  }
+
+  /**
+   * @afterTermCreate
+   */
+  public function storeTerm(EntityScope $scope) {
+    $this->created_terms[] = $scope->getEntity();
   }
 
   /**
@@ -46,6 +58,19 @@ class ParagraphsContext extends RawDrupalContext {
     }
     throw new Exception('Node has not been created.');
   }
+
+  /**
+   * Returns the last created term.
+   *
+   * @return \stdClass
+   */
+  protected function getCurrentTerm() {
+    if ($term = end($this->created_terms)) {
+      return $term;
+    }
+    throw new Exception('Term has not been created.');
+  }
+
 
   /**
    * Returns node with provided title.
@@ -275,6 +300,22 @@ class ParagraphsContext extends RawDrupalContext {
 
     $this->appendParagraphToEntityField('node', $this->getCurrentNode()->nid, $field_name, $paragraph);
   }
+
+  /**
+   * @Given /^I add the following paragraph to field "([^"]+)" on term:$/
+   */
+  public function addParagraphToFieldOnTerm($field_name, Paragraph $paragraph)
+  {
+    if (empty($this->getCurrentTerm())) {
+      throw new Exception("There are no terms to add paragraphs to.");
+    }
+
+    if (empty($paragraph)) {
+      throw new Exception("Unable to create Paragraph.");
+    }
+    $this->appendParagraphToEntityField('taxonomy_term', $this->getCurrentTerm()->tid, $field_name, $paragraph);
+  }
+
 
   /**
    * @Given /^I add the following paragraph to field "([^"]+)" on paragraph "([^"]+)":$/
