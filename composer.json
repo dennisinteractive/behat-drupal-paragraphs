@@ -5,10 +5,7 @@
   "license": "GPL-2.0+",
   "minimum-stability": "dev",
   "prefer-stable": true,
-  "require": {
-    "behat/mink":   "~1.5",
-    "drupal/drupal-extension": "^3.1"
-  },
+  "require": { },
   "autoload": {
     "psr-4": {"DennisDigital\\Behat\\Drupal\\Paragraphs\\": "src"}
   }
